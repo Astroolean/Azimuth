@@ -1,6 +1,6 @@
 # Azimuth V1.2
 
-**Azimuth** is a Python-based multitool designed for penetration testing and cybersecurity. It features a collection of tools for various security assessments, including user account management, registration, login, and logout functionalities. This README provides instructions on how to run the application, including the necessary requirements. This is still within its beginning stages and most tools are not available yet. This is something that was once a school project; turned into a side project over the years.
+**Azimuth** is a Python-based multitool designed for penetration testing and cybersecurity. It features a collection of tools for various security assessments, including user account management, registration, login, and logout functionalities. This README provides instructions on how to run the application, including the necessary requirements. This is still within its beginning stages and most tools are not available yet. This is something that was once a school project; turned into a side project over the years. This was created for educational purposes; at no point did I mention anywhere this is for malicious activity. Keep in mind I am not responsible for anything done with this program.
 
 ## Requirements
 
@@ -27,29 +27,72 @@ Before running the executable, ensure you have the following:
    - Go to the [Releases](https://github.com/Astroolean/Azimuth/releases) section of this repository
    - Download the `Azimuth.exe` file.
 
-2. **Extract the Files**:
-   - If the executable is packaged in a ZIP file, extract it to your desired location on your computer.
+2. **Install ANY/ALL Requirenments**:
+   - Install all the neccessary fucking bullshit or this will not work.
 
 3. **Run the Application**:
    - Double-click the `Azimuth.exe` file to launch the application.
 
 ## Usage
 
-### Registering an Account
+**Azimuth** offers a range of penetration testing tools organized into 10 distinct tabs, each providing access to different functionalities. Additionally, there are user management buttons for account actions. Below are the details on how to use these features:
 
-1. Enter a desired username in the "Username" field.
-2. Enter a password in the "Password" field.
-3. Click the "Register" button to create an account.
+### User Account Management
 
-### Logging into an Account
+1. **Registering an Account**:
+   - Enter a desired username in the "Username" field.
+   - Enter a password in the "Password" field.
+   - Click the "Register" button to create an account.
 
-1. Enter your registered username in the "Username" field.
-2. Enter your password in the "Password" field.
-3. Click the "Login" button to access your account.
+2. **Logging into an Account**:
+   - Enter your registered username in the "Username" field.
+   - Enter your password in the "Password" field.
+   - Click the "Login" button to access your account.
 
-### Logging Out
+3. **Logging Out**:
+   - Click the "Logout" button to log out from your account.
 
-- Click the "Logout" button to log out from your account.
+4. **Deleting an Account**:
+   - Click the "Delete Account" button to permanently remove your account. You will be prompted to confirm this action.
+
+### Toolkits Overview
+
+Azimuth features 10 tabs, each dedicated to specific toolkits for various penetration testing tasks. Here’s a brief overview of what each tab includes:
+
+1. **Tab 1: Information Gathering**
+   - Tools for reconnaissance, such as WHOIS lookups and DNS enumeration.
+
+2. **Tab 2: Vulnerability Scanning**
+   - Utilities for scanning networks and applications for known vulnerabilities.
+
+3. **Tab 3: Exploitation**
+   - Tools for testing and exploiting vulnerabilities in systems.
+
+4. **Tab 4: Post-Exploitation**
+   - Techniques and scripts for maintaining access and data extraction after exploitation.
+
+5. **Tab 5: Web Application Testing**
+   - Tools specifically designed for testing the security of web applications.
+
+6. **Tab 6: Wireless Network Testing**
+   - Utilities for assessing the security of wireless networks.
+
+7. **Tab 7: Social Engineering**
+   - Tools for conducting social engineering attacks and awareness training.
+
+8. **Tab 8: Password Cracking**
+   - Utilities for cracking passwords using various algorithms and techniques.
+
+9. **Tab 9: Reporting**
+   - Tools for generating reports based on your findings during testing.
+
+10. **Tab 10: Miscellaneous Tools**
+   - A collection of additional tools that do not fit into the above categories.
+
+### Navigation
+
+- To navigate between toolkits, simply click on the desired tab at the top of the application interface.
+- Each toolkit may contain additional buttons and features specific to that toolkit's purpose.
 
 ## Troubleshooting
 

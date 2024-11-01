@@ -1,6 +1,6 @@
 # Azimuth V1.2
 
-**Azimuth** is a Python application designed to manage user accounts with features for registration, login, and logout functionality. This README provides instructions on how to run the application, including the necessary requirements.
+**Azimuth** is a Python-based multitool designed for penetration testing and cybersecurity. It features a collection of tools for various security assessments, including user account management, registration, login, and logout functionalities. This README provides instructions on how to run the application, including the necessary requirements. This is still within its beginning stages and most tools are not available yet. This is something that was once a school project; turned into a side project over the years.
 
 ## Requirements
 

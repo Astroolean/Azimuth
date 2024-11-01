@@ -1,3 +1,4 @@
+import hashlib
 from itertools import cycle
 import sqlite3
 import tkinter as tk
@@ -67,7 +68,7 @@ print(Astroolean.signature())
 
 class AzimuthApp():
     def __init__(self):
-        #self.CUSTOM_LOADING = LoadingScreen()
+        self.CUSTOM_LOADING = LoadingScreen()
         self.AZIMUTH = customtkinter.CTk()
         self.BUTTON_COLOR = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff"]
         self.USERNAME_COLOR = ["#ffffff", "#000000", "#333333", "#666666", "#999999", "#cccccc"]
@@ -77,6 +78,7 @@ class AzimuthApp():
         self.gif_path = os.path.join(os.path.dirname(__file__), "Logo", "Azimuth Logo.gif")
         self.target_size = (335, 335)  # Define your target width and height here
         self.AzimuthGUI()
+        self.initialize_database()  # Initialize database on startup
 
     def PlayGif(self):
         self.gif_image = Image.open(self.gif_path)
@@ -301,80 +303,79 @@ class AzimuthApp():
         self.color_cycle_after_id = self.AZIMUTH.after(150, self.ArrowButtonColorCycle)
 
     def CustomInfo(self, TITLE, MESSAGE, ASH):
+        # Create the CTkToplevel window
         INFO = customtkinter.CTkToplevel()
         INFO.title(TITLE)
         INFO.overrideredirect(True)
-    
-        # Set the constants for the popup size and button dimensions
-        AVAILABLE_WIDTH = 600  # Fixed width to match ShowConfirmation
-        WINDOW_HEIGHT = 150    # Fixed height to match ShowConfirmation
-    
-        # Calculate the position for the popup at the bottom-right corner
+
+        # Set constants for popup size and button dimensions
+        AVAILABLE_WIDTH = 600
+        WINDOW_HEIGHT = 150
+
+        # Calculate bottom-right corner position
         RIGHT_EDGE_WINDOW_X = self.AZIMUTH.winfo_width()
         RIGHT_EDGE_WINDOW_Y = self.AZIMUTH.winfo_height()
-        Y_POSITION = RIGHT_EDGE_WINDOW_Y - WINDOW_HEIGHT - 15  # Same Y position calculation as ShowConfirmation
-        X_POSITION = RIGHT_EDGE_WINDOW_X - AVAILABLE_WIDTH - 5   # Same X position calculation as ShowConfirmation
-    
-        # Set the geometry of the popup
+        Y_POSITION = RIGHT_EDGE_WINDOW_Y - WINDOW_HEIGHT - 15
+        X_POSITION = RIGHT_EDGE_WINDOW_X - AVAILABLE_WIDTH - 5
+
+        # Set geometry for popup position
         INFO.geometry(f"{AVAILABLE_WIDTH}x{WINDOW_HEIGHT}+{X_POSITION}+{Y_POSITION}")
-    
-        # Ensure the main window stays on top after a short delay
+
+        # Ensure main window stays on top
         self.AZIMUTH.after(150)
-    
-        # Create the canvas for the popup
+
+        # Create and pack the main canvas
         self.INFO_CUSTOM = customtkinter.CTkCanvas(INFO, width=AVAILABLE_WIDTH, height=WINDOW_HEIGHT)
         self.INFO_CUSTOM.pack(expand=True, fill="both")
-    
-        # Initialize the background of the popup
+
+        # Initialize background of popup
         self.InitializeBackground(self.INFO_CUSTOM)
-    
-        # Add the message text to the canvas, centered horizontally
+
+        # Center the message text on the canvas
         self.INFO_TEXT_ID = self.INFO_CUSTOM.create_text(
             AVAILABLE_WIDTH // 2, 
-            30,  # Adjusted Y position to leave space for buttons
+            30, 
             text=MESSAGE, 
             font=self.FONT, 
             anchor="center"
         )
-    
+
         # Calculate button positions
         button_width = 125
-        button_spacing = 20  # Adjusted spacing between buttons
-        total_button_width = button_width
-    
-        ok_button_x = (AVAILABLE_WIDTH - total_button_width) // 2
-    
-        # Create OK button
+        ok_button_x = (AVAILABLE_WIDTH - button_width) // 2
+
+        # Load and resize button background image
+        AZIMUTH_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
+        BACKGROUND_PATH = os.path.join(AZIMUTH_DIRECTORY, 'Backgrounds', 'background2.jpg')
+        button_background_image = Image.open(BACKGROUND_PATH).resize((button_width, 50))
+        ok_button_bg_photo = ImageTk.PhotoImage(button_background_image)
+
+        # Create the OK button on canvas
         self.INFO_BUTTON = customtkinter.CTkCanvas(self.INFO_CUSTOM, width=button_width, height=50, highlightthickness=0)
         self.INFO_BUTTON.place(x=ok_button_x, y=WINDOW_HEIGHT - 75)
-        ok_button_bg_image = Image.open("background2.jpg").resize((button_width, 50))
-        ok_button_bg_photo = ImageTk.PhotoImage(ok_button_bg_image)
         self.INFO_BUTTON.create_image(0, 0, image=ok_button_bg_photo, anchor="nw")
         self.INFO_BUTTON.create_text(button_width // 2, 25, text="OK", fill="white", font=("Pixel Calculon", 16))
         self.INFO_BUTTON.bind("<Button-1>", lambda event: self.CloseGUI(INFO))
-        self.INFO_BUTTON.image = ok_button_bg_photo
-    
-        # Start the color cycling for the button
+        self.INFO_BUTTON.image = ok_button_bg_photo  # Prevent garbage collection
+
+        # Start color cycling and dynamic text color update
         self.BUTTON_COLOR = self.InfoCycle()
-    
-        # Set a flag indicating that the info popup is open
         self.INFO_OPEN = True
-    
-        # Start the color cycling effect for the text
         self.InfoColor()
-    
-        # Update the text color dynamically
         self.UpdateInfoTextColor(self.INFO_CUSTOM)
         
     def InitializeBackground(self, INITIALIZE):
+        # Define the path for the background image
         AZIMUTH_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-        IMAGE_PATH = os.path.join(AZIMUTH_DIRECTORY, 'Background2.jpg')
-        IMAGE = Image.open(IMAGE_PATH)
+        BACKGROUND_PATH = os.path.join(AZIMUTH_DIRECTORY, 'Backgrounds', 'Background2.jpg')
+
+        # Open and convert the image
+        IMAGE = Image.open(BACKGROUND_PATH)
         CUSTOM_BACKGROUND_IMAGE = ImageTk.PhotoImage(IMAGE)
-        INITIALIZE.create_image(0, 0, 
-                             image=CUSTOM_BACKGROUND_IMAGE, 
-                             anchor="nw")
-        INITIALIZE.image = CUSTOM_BACKGROUND_IMAGE 
+
+        # Set the background image on the canvas
+        INITIALIZE.create_image(0, 0, image=CUSTOM_BACKGROUND_IMAGE, anchor="nw")
+        INITIALIZE.image = CUSTOM_BACKGROUND_IMAGE  # Keep a reference to prevent garbage collection
 
     def UpdateInfoTextColor(self, frame):
         CURRENT_TIME = time.time()
@@ -430,24 +431,27 @@ class AzimuthApp():
             print(f"TclError: {e}")
 
     def TabButtons(self, text, index, x, y):
-        # Increase the width of the button
+        # Define button dimensions
         button_width = 200  # Adjust this value as needed
+        button_height = 50
 
-        # Create a canvas for the button background with the new width
-        button_canvas = customtkinter.CTkCanvas(self.AZIMUTH, width=button_width, height=50, highlightthickness=0)
+        # Create a canvas for the button background with the specified dimensions
+        button_canvas = customtkinter.CTkCanvas(self.AZIMUTH, width=button_width, height=button_height, highlightthickness=0)
         button_canvas.place(x=x, y=y)
 
-        # Load and place the background image on the canvas separately for each button
-        button_bg_image = Image.open("background2.jpg").resize((button_width, 50))  # Update with correct dimensions
+        # Load and resize the background image for each button
+        AZIMUTH_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
+        BACKGROUND_PATH = os.path.join(AZIMUTH_DIRECTORY, 'Backgrounds', 'background2.jpg')
+        button_bg_image = Image.open(BACKGROUND_PATH).resize((button_width, button_height))
         button_bg_photo = ImageTk.PhotoImage(button_bg_image)
 
-        # Create a new image for each button to avoid reusing the same object
+        # Set the background image for each button
         button_canvas.create_image(0, 0, image=button_bg_photo, anchor="nw")
 
-        # Add text to the canvas, centered and initially white
-        text_id = button_canvas.create_text(button_width // 2, 25, text=text, fill="white", font=("Pixel Calculon", 16))
+        # Add centered text to the canvas
+        text_id = button_canvas.create_text(button_width // 2, button_height // 2, text=text, fill="white", font=("Pixel Calculon", 16))
 
-        # Handle button clicks manually
+        # Handle button clicks
         button_canvas.bind("<Button-1>", lambda event: self.ToggleTab(index))
 
         # Keep reference to the image to avoid garbage collection
@@ -523,26 +527,44 @@ class AzimuthApp():
             self.CURRENT_TAB = index
 
     def AzimuthGUI(self):
-        APP_BACKGROUND = Image.open("Primary.jpg")
-        APP_BACKGROUND = ImageTk.PhotoImage(APP_BACKGROUND)
+        # Set up directories and paths
+        AZIMUTH_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
+        BACKGROUND_PATH = os.path.join(AZIMUTH_DIRECTORY, 'Backgrounds', 'Primary.jpg')
+    
+        # Open the background image and convert it to a PhotoImage once
+        CUSTOM_BACKGROUND = Image.open(BACKGROUND_PATH)
+        APP_BACKGROUND = ImageTk.PhotoImage(CUSTOM_BACKGROUND)
+    
+        # Set up the background label with the image
         BACKGROUND_LABEL = customtkinter.CTkLabel(self.AZIMUTH, image=APP_BACKGROUND)
+        BACKGROUND_LABEL.image = APP_BACKGROUND  # Keep a reference to prevent garbage collection
         BACKGROUND_LABEL.place(relwidth=1, relheight=1)
+    
+        # Font and color settings
         self.FONT = ("Pixel Calculon", 18)
         self.USERNAME_COLOR = self.EntryCycle()
         self.BUTTON_COLOR = self.ButtonCycle()
+    
+        # Set up the main canvas
         self.APP = customtkinter.CTkCanvas(self.AZIMUTH, width=800, height=600)
         self.CURRENT_USERNAME = self.APP
         self.CURRENT_USERNAME.place(relwidth=1, relheight=1)
         self.CURRENT_USERNAME.create_image(0, 0, anchor="nw", image=APP_BACKGROUND)
         self.CURRENT_USERNAME.create_text(0, 0, text="", font=self.FONT)
+    
+        # Window settings
         self.AZIMUTH.overrideredirect(True)
         self.AZIMUTH.resizable(False, False)
+    
+        # Initialize other properties
         self.AFTER = []
         self.CANVAS = None
         self.TAB_CONTENT = None
         self.TABS = []
         self.CURRENT_TAB = None
         self.PROGRAMS = []
+    
+        # Call initialization methods
         self.CenterGUI()
         self.UpdateLog()
         self.UserPassEntry()
@@ -552,6 +574,7 @@ class AzimuthApp():
         self.EntryColor()
         self.VerticalTabs()
         self.ArrowButtonColorCycle()
+    
         # Start the GIF playback
         self.PlayGif()
 
@@ -659,34 +682,31 @@ class AzimuthApp():
 
         # Define button positions to align them like before
         button_positions = [
-            {"text": "A c c e s s", "y_pos": 190},
-            {"text": "L o g o u t", "y_pos": 245},
-            {"text": "C r e a t e", "y_pos": 300},
-            {"text": "D e l e t e", "y_pos": 355},
+            {"text": "A c c e s s", "y_pos": 190, "command": self.LoginAccount},
+            {"text": "L o g o u t", "y_pos": 245, "command": self.LogoutAccount},
+            {"text": "C r e a t e", "y_pos": 300, "command": self.RegisterAccount},
+            {"text": "D e l e t e", "y_pos": 355, "command": self.DeleteAccount},
         ]
+
+        # Load the background image once and resize it for button dimensions
+        AZIMUTH_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
+        BACKGROUND_PATH = os.path.join(AZIMUTH_DIRECTORY, 'Backgrounds', 'background2.jpg')
+        button_bg_image = Image.open(BACKGROUND_PATH).resize((button_width, button_height))
+        button_bg_photo = ImageTk.PhotoImage(button_bg_image)
 
         for button in button_positions:
             # Create a canvas for each button with dynamic text color
             button_canvas = customtkinter.CTkCanvas(self.AZIMUTH, width=button_width, height=button_height, highlightthickness=0)
             button_canvas.place(x=15, y=button["y_pos"])
 
-            # Load and place the background image on the canvas
-            button_bg_image = Image.open("background2.jpg").resize((button_width, button_height))
-            button_bg_photo = ImageTk.PhotoImage(button_bg_image)
+            # Set the background image for each button
             button_canvas.create_image(0, 0, image=button_bg_photo, anchor="nw")
 
-            # Add text to the canvas, centered
+            # Add centered text to the canvas
             button_text_id = button_canvas.create_text(button_width // 2, button_height // 2 + 5, text=button["text"], fill="white", font=("Pixel Calculon", 18))
 
             # Bind the appropriate command for each button
-            if button["text"] == "A c c e s s":
-                button_canvas.bind("<Button-1>", lambda event: self.LoginAccount())
-            elif button["text"] == "L o g o u t":
-                button_canvas.bind("<Button-1>", lambda event: self.LogoutAccount())
-            elif button["text"] == "C r e a t e":
-                button_canvas.bind("<Button-1>", lambda event: self.RegisterAccount())
-            elif button["text"] == "D e l e t e":
-                button_canvas.bind("<Button-1>", lambda event: self.DeleteAccount())
+            button_canvas.bind("<Button-1>", lambda event, cmd=button["command"]: cmd())
 
             # Keep reference to the image to avoid garbage collection
             button_canvas.image = button_bg_photo
@@ -710,6 +730,15 @@ class AzimuthApp():
         self.AZIMUTH.bind('<Return>', lambda event: self.LoginAction())
         self.AZIMUTH.bind('<Escape>', lambda event: self.LogoutAction())
 
+    def initialize_database(self):
+        # Check if the database file exists, create it if it doesn't
+        if not os.path.exists("main.db"):
+            DATABASE = sqlite3.connect("main.db")
+            LOOKUP = DATABASE.cursor()
+            LOOKUP.execute('CREATE TABLE IF NOT EXISTS user (username TEXT PRIMARY KEY, password TEXT)')
+            DATABASE.commit()
+            DATABASE.close()
+
     def LoginAccount(self):
         CURRENT_USER = self.APP.itemcget(self.CURRENT_USERNAME_ID, 'text')
         try:
@@ -718,12 +747,17 @@ class AzimuthApp():
             else:
                 DATABASE = sqlite3.connect("main.db")
                 LOOKUP = DATABASE.cursor()
-                LOOKUP.execute('SELECT * FROM user WHERE username=? AND password=?', (self.UserEntry.get(), self.PassEntry.get()))
+
+                # Ensure that the password is hashed for comparison
+                hashed_password = self.hash_password(self.PassEntry.get())
+                
+                LOOKUP.execute('SELECT * FROM user WHERE username=? AND password=?',
+                               (self.UserEntry.get(), hashed_password))
                 USER = LOOKUP.fetchone()
                 DATABASE.close()
+
                 if USER:
                     USERNAME = self.UserEntry.get()
-                
                     self.CustomInfo("Success!", "   Welcome to Azimuth V1.2 \n   Created by: Astroolean", self.FONT)
                     self.logged_text = f"{USERNAME}"
                     self.APP.itemconfigure(self.CURRENT_USERNAME_ID, text=self.logged_text, font=self.FONT)
@@ -732,7 +766,7 @@ class AzimuthApp():
                     self.CustomInfo("Failure!", "   Invalid username/password...", self.FONT)
         except Exception as e:
             print(f"Error during login: {e}")
-                
+
     def LogoutAccount(self):
         CURRENT_USER = self.APP.itemcget(self.CURRENT_USERNAME_ID, 'text')
     
@@ -751,13 +785,14 @@ class AzimuthApp():
         def on_cancel():
             confirmation_popup.destroy()  # Close the confirmation dialog
 
+        # Create the popup window
         confirmation_popup = customtkinter.CTkToplevel()
         confirmation_popup.title(TITLE)
         confirmation_popup.overrideredirect(True)
 
-        # Adjust these values to change the popup size
-        AVAILABLE_WIDTH = 600  # Example fixed width, adjust as necessary
-        WINDOW_HEIGHT = 150    # Example fixed height, adjust as necessary
+        # Define popup size
+        AVAILABLE_WIDTH = 600
+        WINDOW_HEIGHT = 150
 
         # Calculate the position for the popup
         RIGHT_EDGE_WINDOW_X = self.AZIMUTH.winfo_width()
@@ -765,19 +800,18 @@ class AzimuthApp():
         Y_POSITION = RIGHT_EDGE_WINDOW_Y - WINDOW_HEIGHT - 15
         X_POSITION = RIGHT_EDGE_WINDOW_X - AVAILABLE_WIDTH - 5
 
-        # Set the geometry of the popup
+        # Set the popup geometry
         confirmation_popup.geometry(f"{AVAILABLE_WIDTH}x{WINDOW_HEIGHT}+{X_POSITION}+{Y_POSITION}")
         confirmation_popup.attributes('-topmost', True)
-        self.AZIMUTH.after(150)
 
-        # Create the canvas for the popup
-        confirmation_frame = customtkinter.CTkCanvas(confirmation_popup, width=AVAILABLE_WIDTH, height=WINDOW_HEIGHT)
+        # Create the canvas for the popup background
+        confirmation_frame = customtkinter.CTkCanvas(confirmation_popup, width=AVAILABLE_WIDTH, height=WINDOW_HEIGHT, highlightthickness=0)
         confirmation_frame.pack(expand=True, fill="both")
 
-        # Initialize the background of the popup
+        # Initialize the background for the popup using the `InitializeBackground` method
         self.InitializeBackground(confirmation_frame)
 
-        # Create the text for the confirmation message and store the text ID
+        # Display the confirmation message
         self.INFO_TEXT_ID = confirmation_frame.create_text(
             AVAILABLE_WIDTH // 2, 
             30,  # Adjusted Y position to leave space for buttons
@@ -786,33 +820,38 @@ class AzimuthApp():
             anchor="center"
         )
 
-        # Calculate the center positions for the buttons with slightly reduced spacing
+        # Button settings
         button_width = 125
-        button_spacing = 20  # Adjusted spacing between buttons
+        button_spacing = 20
         total_button_width = 2 * button_width + button_spacing
-
         yes_button_x = (AVAILABLE_WIDTH - total_button_width) - 125
         no_button_x = yes_button_x + button_width + button_spacing
 
-        # Create Yes button
+        # Define the path for the button background image
+        AZIMUTH_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
+        BACKGROUND_PATH = os.path.join(AZIMUTH_DIRECTORY, 'Backgrounds', 'background2.jpg')
+
+        # "Yes" Button
         yes_button_canvas = customtkinter.CTkCanvas(confirmation_frame, width=button_width, height=50, highlightthickness=0)
         yes_button_canvas.place(x=yes_button_x, y=WINDOW_HEIGHT - 75)
-        yes_button_bg_image = Image.open("background2.jpg").resize((button_width, 50))
+        yes_button_bg_image = Image.open(BACKGROUND_PATH).resize((button_width, 50))
         yes_button_bg_photo = ImageTk.PhotoImage(yes_button_bg_image)
         yes_button_canvas.create_image(0, 0, image=yes_button_bg_photo, anchor="nw")
         yes_button_canvas.create_text(button_width // 2, 25, text="Yes", fill="white", font=("Pixel Calculon", 16))
         yes_button_canvas.bind("<Button-1>", lambda event: on_confirm())
         yes_button_canvas.image = yes_button_bg_photo
 
-        # Create No button
+        # "No" Button
         no_button_canvas = customtkinter.CTkCanvas(confirmation_frame, width=button_width, height=50, highlightthickness=0)
         no_button_canvas.place(x=no_button_x, y=WINDOW_HEIGHT - 75)
-        no_button_bg_image = Image.open("background2.jpg").resize((button_width, 50))
+        no_button_bg_image = Image.open(BACKGROUND_PATH).resize((button_width, 50))
         no_button_bg_photo = ImageTk.PhotoImage(no_button_bg_image)
         no_button_canvas.create_image(0, 0, image=no_button_bg_photo, anchor="nw")
         no_button_canvas.create_text(button_width // 2, 25, text="No", fill="white", font=("Pixel Calculon", 16))
         no_button_canvas.bind("<Button-1>", lambda event: on_cancel())
         no_button_canvas.image = no_button_bg_photo
+
+        # Start the color cycling for the information text
         self.InfoColor()
         self.UpdateInfoTextColor(confirmation_frame)
 
@@ -851,62 +890,61 @@ class AzimuthApp():
             # Use `after` to continue the color-cycling effect
             self.AZIMUTH.after(150, lambda: self.ConfirmationButtonColorCycle(yes_button, no_button))
 
+    def hash_password(self, password):
+        # Hash the password for secure storage
+        return hashlib.sha256(password.encode()).hexdigest()
+
     def RegisterAccount(self):
         USERNAME = self.UserEntry.get()
-        PASSWORD = self.PassEntry.get()
+        PASSWORD = self.hash_password(self.PassEntry.get())  # Hash the password
         DATABASE = sqlite3.connect("main.db")
         LOOKUP = DATABASE.cursor()
-        LOOKUP.execute('SELECT * FROM user WHERE username=?', 
-                       (USERNAME,))
-        EXISTING_USER = LOOKUP.fetchone()
-        if EXISTING_USER:
+        
+        try:
+            LOOKUP.execute('SELECT * FROM user WHERE username=?', (USERNAME,))
+            EXISTING_USER = LOOKUP.fetchone()
+            if EXISTING_USER:
+                self.CenterGUI()
+                self.CustomInfo("Registration Error", "   Username already exists...", self.FONT)
+            else:
+                LOOKUP.execute('INSERT INTO user (username, password) VALUES (?, ?)', (USERNAME, PASSWORD))
+                DATABASE.commit()
+                self.CenterGUI()
+                self.CustomInfo("Registration Successful", f"   Account created for {USERNAME}...", self.FONT)
+        except Exception as e:
+            print(f"Error during registration: {e}")
             self.CenterGUI()
-            self.CustomInfo("Registration Error", 
-                            "   Username already exists...", 
-                            self.FONT)
-        else:
-            LOOKUP.execute('INSERT INTO user (username, password) VALUES (?, ?)', 
-                           (USERNAME, PASSWORD))
-            DATABASE.commit()
-            self.CenterGUI()
-            self.CustomInfo("Registration Successful", 
-                            f"   Account created {USERNAME}...", 
-                            self.FONT)
-        DATABASE.close()
+            self.CustomInfo("Registration Error", "   An error occurred. Please try again.", self.FONT)
+        finally:
+            DATABASE.close()
 
     def DeleteAccount(self):
         DATABASE = sqlite3.connect("main.db")
         LOOKUP = DATABASE.cursor()
-        CURRENT_USERNAME = self.CURRENT_USERNAME.itemcget(self.CURRENT_USERNAME_ID, "text")
-        if CURRENT_USERNAME:
-            LOOKUP.execute('SELECT * FROM user WHERE username=?', 
-                           (self.UserEntry.get(),))
-            EXISTING_USER = LOOKUP.fetchone()
-            if EXISTING_USER:
-                LOOKUP.execute('DELETE FROM user WHERE username=?', 
-                               (self.UserEntry.get(),))
-                DATABASE.commit()
-                self.CustomInfo(
-                    f"Successfully Deleted",
-                    f"   Account {self.UserEntry.get()} removed...",
-                    self.FONT,
-                )
-                self.CURRENT_USERNAME.itemconfigure(self.CURRENT_USERNAME_ID, text="", 
-                                                font=self.FONT)
-                self.UserEntry.delete(0, 
-                                      tk.END)
-                self.PassEntry.delete(0, 
-                                      tk.END)
-            else:
+        
+        CURRENT_USERNAME = self.APP.itemcget(self.CURRENT_USERNAME_ID, "text")  # Get currently logged in username
+        if CURRENT_USERNAME:  # Check if a user is logged in
+            try:
+                LOOKUP.execute('SELECT * FROM user WHERE username=?', (CURRENT_USERNAME,))
+                EXISTING_USER = LOOKUP.fetchone()
+                if EXISTING_USER:
+                    LOOKUP.execute('DELETE FROM user WHERE username=?', (CURRENT_USERNAME,))
+                    DATABASE.commit()
+                    self.CustomInfo(f"Successfully Deleted", f"   Account {CURRENT_USERNAME} removed...", self.FONT)
+                    self.APP.itemconfigure(self.CURRENT_USERNAME_ID, text="", font=self.FONT)  # Clear displayed username
+                    self.UserEntry.delete(0, tk.END)
+                    self.PassEntry.delete(0, tk.END)
+                else:
+                    self.CenterGUI()
+                    self.CustomInfo("Invalid Error", "   Account not found...", self.FONT)
+            except Exception as e:
+                print(f"Error during deletion: {e}")
                 self.CenterGUI()
-                self.CustomInfo("Invalid Error", 
-                                "Are you retarded?", 
-                                self.FONT)
+                self.CustomInfo("Deletion Error", "   An error occurred. Please try again.", self.FONT)
         else:
             self.CenterGUI()
-            self.CustomInfo("Access Denied", 
-                            "   Are you retarded?", 
-                            self.FONT)
+            self.CustomInfo("Access Denied", "   You must be logged in to delete your account.", self.FONT)
+
         DATABASE.close()
 
 

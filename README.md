@@ -1,5 +1,8 @@
 # Azimuth V1.2
 
+![a2fc77103252e85d0a913d83fa730da4](https://github.com/user-attachments/assets/830f8bc9-d3fc-42df-955f-6e864232ca47)
+
+
 **Azimuth** is a Python-based multitool designed for penetration testing and cybersecurity. It features a collection of tools for various security assessments, including user account management, registration, login, and logout functionalities. This README provides instructions on how to run the application, including the necessary requirements. This is still within its beginning stages and most tools are not available yet. This is something that was once a school project; turned into a side project over the years. This was created for educational purposes; at no point did I mention anywhere this is for malicious activity. Keep in mind I am not responsible for anything done with this program.
 
 ## Requirements

@@ -102,10 +102,6 @@ Azimuth features 10 tabs, each dedicated to specific toolkits for various penetr
 - **Database Issues**: If the database file (`main.db`) is not created automatically, please ensure you have write permissions in the folder where the executable is located.
 - **Login Failure**: If you encounter login failures, double-check that you are using the correct username and password. Ensure the account is registered before attempting to log in.
 
-## Contributing
-
-If you'd like to contribute to the development of Azimuth, feel free to fork the repository and submit a pull request. Your contributions are welcome!
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

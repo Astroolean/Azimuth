@@ -108,5 +108,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-For questions or feedback, please contact [astroolean@gmail.com](mailto:astroolean@gmail.com).
+For questions or feedback, please contact @Astroolean on discord...
 
